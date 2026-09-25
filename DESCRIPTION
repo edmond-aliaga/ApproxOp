@@ -12,12 +12,13 @@ Authors@R:
 Description: Provides a unified computational framework for defining,
     evaluating, analyzing, comparing, and visualizing positive linear
     approximation operators. The package supports classical and generalized
-    discrete operators, ordinary and central moments, convergence analysis,
-    numerical diagnostics, parameter studies, and user-defined operators.
+    discrete operators, ordinary and central moments, numerical moment
+    verification, approximation error analysis, convergence studies,
+    parameter studies, and user-defined operators.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Suggests: 
+Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.1.0
