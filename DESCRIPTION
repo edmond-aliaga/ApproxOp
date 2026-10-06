@@ -14,7 +14,11 @@ Description: Provides a unified computational framework for defining,
     approximation operators. The package supports classical and generalized
     discrete operators, ordinary and central moments, numerical moment
     verification, approximation error analysis, convergence studies,
-    parameter studies, and user-defined operators.
+    parameter studies, and user-defined operators. The implemented framework
+    is related to classical and generalized approximation operators described
+    in Szász (1950) <doi:10.6028/JRES.045.024>, Sucu and Varma (2015)
+    <doi:10.1016/j.amc.2015.08.077>, and Aliaga and Aslan (2026)
+    <doi:10.1002/mma.70924>.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

@@ -60,7 +60,6 @@ The available error metrics are the maximum absolute error,
 mean absolute error (MAE), and root mean squared error (RMSE).
 }
 \examples{
-\dontrun{
 C <- approx_operator(
   family = "sheffer",
   subfamily = "charlier",
@@ -78,6 +77,5 @@ Scan <- parameter_scan(
 
 plot(Scan)
 plot(Scan, metric = "mae")
-}
 
 }

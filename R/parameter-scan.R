@@ -22,7 +22,6 @@
 #'   parameter values and the corresponding error measures.
 #'
 #' @examples
-#' \dontrun{
 #' C <- approx_operator(
 #'   family = "sheffer",
 #'   subfamily = "charlier",
@@ -37,7 +36,6 @@
 #'   f = function(x) x^2,
 #'   grid = seq(0, 1, length.out = 101)
 #' )
-#' }
 #'
 #' @export
 parameter_scan <- function(

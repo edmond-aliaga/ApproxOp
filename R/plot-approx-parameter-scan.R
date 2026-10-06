@@ -28,7 +28,6 @@
 #' @return The object \code{x}, invisibly.
 #'
 #' @examples
-#' \dontrun{
 #' C <- approx_operator(
 #'   family = "sheffer",
 #'   subfamily = "charlier",
@@ -46,7 +45,6 @@
 #'
 #' plot(Scan)
 #' plot(Scan, metric = "mae")
-#' }
 #'
 #' @export
 plot.approx_parameter_scan <- function(

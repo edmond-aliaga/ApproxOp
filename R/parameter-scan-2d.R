@@ -33,7 +33,6 @@
 #'   corresponding error measures.
 #'
 #' @examples
-#' \dontrun{
 #' M <- approx_operator(
 #'   family = "sheffer",
 #'   subfamily = "meixner",
@@ -55,7 +54,6 @@
 #'   f = function(x) x^2,
 #'   grid = seq(0, 1, length.out = 101)
 #' )
-#' }
 #'
 #' @export
 parameter_scan_2d <- function(

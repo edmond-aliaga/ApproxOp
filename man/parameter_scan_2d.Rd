@@ -59,7 +59,6 @@ They are retained in the result with \code{valid = FALSE},
 missing error measures, and an explanatory message.
 }
 \examples{
-\dontrun{
 M <- approx_operator(
   family = "sheffer",
   subfamily = "meixner",
@@ -81,6 +80,5 @@ parameter_scan_2d(
   f = function(x) x^2,
   grid = seq(0, 1, length.out = 101)
 )
-}
 
 }

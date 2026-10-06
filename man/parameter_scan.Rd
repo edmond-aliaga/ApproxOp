@@ -37,7 +37,6 @@ reports the maximum absolute error, mean absolute error (MAE), and
 root mean squared error (RMSE).
 }
 \examples{
-\dontrun{
 C <- approx_operator(
   family = "sheffer",
   subfamily = "charlier",
@@ -52,6 +51,5 @@ parameter_scan(
   f = function(x) x^2,
   grid = seq(0, 1, length.out = 101)
 )
-}
 
 }
