@@ -1,0 +1,229 @@
+---
+title: "Getting Started with ApproxOp: Approximation, Moments, and Error Analysis"
+author: "Edmond Aliaga"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with ApproxOp: Approximation, Moments, and Error Analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>",
+                      fig.width = 6.2, fig.height = 4.0)
+```
+
+# Introduction
+
+`ApproxOp` offers a unified computational interface for positive linear
+approximation operators. This vignette demonstrates a reproducible workflow:
+construct operators, approximate functions, compute and check moments,
+quantify numerical errors, compare operator families, investigate parameters,
+and register a custom operator.
+
+The examples use version 0.1.0 of the package. The operator families shown
+here use the `"discrete"` variant. Numerical results on finite grids are
+diagnostics, not general approximation theorems.
+
+```{r}
+library(ApproxOp)
+f <- function(x) x^2
+grid <- seq(0, 1, length.out = 101)
+```
+
+# Constructing and evaluating Bernstein operators
+
+For $x\in[0,1]$, the Bernstein operator is
+$$
+B_n(f;x)=\sum_{k=0}^{n}{n\choose k}x^k(1-x)^{n-k}f(k/n).
+$$
+
+```{r}
+B20 <- approx_operator(family = "bernstein", n = 20)
+print(B20)
+x <- c(0.25, 0.50, 0.75)
+data.frame(x = x, exact = f(x),
+           approximated = approximate(B20, f, x))
+```
+
+For the quadratic test function,
+$$
+B_n(t^2;x)=x^2+\frac{x(1-x)}{n}.
+$$
+This provides an independent analytic check.
+
+```{r}
+observed <- as.numeric(approximate(B20, f, x))
+expected <- x^2 + x * (1-x)/20
+stopifnot(isTRUE(all.equal(observed, expected, tolerance = 1e-8)))
+```
+
+# Plotting approximation and error
+
+```{r, fig.cap="Bernstein approximation of the quadratic function."}
+plot(B20, f = f, grid = grid)
+```
+
+```{r, fig.cap="Pointwise Bernstein approximation error."}
+plot(B20, f = f, grid = grid, type = "error")
+```
+
+# Moments and numerical verification
+
+The first ordinary moments are $B_n(1;x)=1$, $B_n(t;x)=x$, and
+$B_n(t^2;x)=x^2+x(1-x)/n$. In particular,
+$\mu_{n,1}(x)=0$ and $\mu_{n,2}(x)=x(1-x)/n$.
+
+```{r}
+ordinary <- moments(B20, order = 2, x = x)
+central <- moments(B20, order = 2, x = x, central = TRUE)
+print(ordinary)
+print(central)
+```
+
+```{r}
+stopifnot(isTRUE(all.equal(as.numeric(ordinary[, 3]),
+                           x^2 + x*(1-x)/20, tolerance = 1e-8)))
+stopifnot(isTRUE(all.equal(as.numeric(central[, 3]),
+                           x*(1-x)/20, tolerance = 1e-8)))
+verify_moments(B20, order = 2, x = 0.5)
+```
+
+`verify_moments()` compares numerical calculation paths. Agreement alone is
+not an independent mathematical proof; the explicit Bernstein formulas above
+serve as separate benchmarks.
+
+# Error analysis and convergence
+
+The absolute error at a grid point is $|L_n(f;x)-f(x)|$.
+`approx_error()` reports pointwise diagnostics.
+
+```{r}
+pointwise <- approx_error(B20, f, grid)
+head(pointwise)
+```
+
+For $f(x)=x^2$, the exact uniform error of Bernstein approximation is
+$1/(4n)$. Our grid includes $x=1/2$, where the maximum occurs.
+
+```{r}
+computed_max <- max(abs(as.numeric(approximate(B20, f, grid))-f(grid)))
+stopifnot(isTRUE(all.equal(computed_max, 1/(4*20), tolerance = 1e-8)))
+data.frame(computed_max, analytic_max = 1/(4*20))
+```
+
+```{r}
+degrees <- c(5, 10, 20, 40, 80)
+conv <- convergence(B20, f = f, grid = grid, n = degrees)
+print(conv)
+data.frame(n = degrees, analytic_max_error = 1/(4*degrees))
+```
+
+```{r, fig.cap="Numerical convergence diagnostics for Bernstein operators."}
+plot(conv)
+```
+
+# Comparing classical operator families
+
+Bernstein operators are defined on $[0,1]$, whereas Szász--Mirakyan and
+Baskakov operators act on $[0,\infty)$. Comparisons therefore use a common
+grid inside $[0,1]$, without claiming uniform convergence on the entire
+unbounded domain.
+
+```{r}
+S20 <- approx_operator(family = "szasz", n = 20)
+K20 <- approx_operator(family = "baskakov", n = 20)
+comparison <- compare_operators(
+  operators = list(Bernstein = B20, Szasz = S20, Baskakov = K20),
+  f = f, grid = grid, n = c(10, 20, 40)
+)
+print(comparison)
+```
+
+```{r, fig.cap="Comparison of approximation errors on the common grid."}
+plot(comparison)
+```
+
+# Sheffer-based operators and parameter studies
+
+The package also provides Sheffer-based subfamilies, including Appell,
+Charlier, and Meixner. Each family has its own parameter restrictions;
+consult the help pages before changing parameters.
+
+The following Charlier example examines the effect of the parameter `a`
+on the same finite evaluation grid.
+
+```{r}
+C20 <- approx_operator(
+  family = "sheffer", subfamily = "charlier",
+  n = 20, params = list(a = 2)
+)
+data.frame(x = x, Charlier = approximate(C20, f, x))
+```
+
+```{r}
+scan <- parameter_scan(
+  operator = C20, parameter = "a",
+  values = c(1.5, 2, 3, 5),
+  f = f, grid = grid
+)
+print(scan)
+```
+
+```{r, fig.cap="Charlier parameter scan."}
+plot(scan)
+```
+
+For Meixner-based operators, admissible settings include
+$0\leq\alpha\leq\beta$, $\theta>0$, and $1/2<c<1$.
+These constraints are essential when designing parameter experiments.
+
+# Registering a user-defined operator
+
+To illustrate extensibility, consider
+$$
+Q_n(f;x)=\frac{n}{n+1}f(x)+\frac{1}{n+1}f(1/2),
+\qquad x\in[0,1].
+$$
+This is a positive linear operator reproducing constants. Moreover,
+$\|Q_nf-f\|_\infty\leq 2\|f\|_\infty/(n+1)$.
+
+```{r}
+register_operator(
+  family = "example_average",
+  domain = c(0, 1),
+  evaluation_engine = function(f, x, operator) {
+    n <- operator$n
+    n/(n+1)*vapply(x, f, numeric(1)) +
+      1/(n+1)*f(0.5)
+  }
+)
+Q20 <- approx_operator(family = "example_average", n = 20)
+data.frame(x = x, computed = approximate(Q20, f, x),
+           exact_formula = 20/21*x^2 + 1/21*0.25)
+```
+
+```{r}
+q_obs <- as.numeric(approximate(Q20, f, x))
+q_exact <- 20/21*x^2 + 0.25/21
+stopifnot(isTRUE(all.equal(q_obs, q_exact, tolerance = 1e-8)))
+```
+
+The custom operator illustrates how the framework can be extended
+without modifying its built-in operator families.
+
+# Reproducibility and further reading
+
+All examples above use deterministic functions and explicitly specified
+evaluation grids. On machines with different numerical settings, minor
+floating-point differences may occur. For more functions, consult
+`help(package = "ApproxOp")` and the individual help pages.
+
+```{r}
+packageVersion("ApproxOp")
+sessionInfo()
+```
+
+Development repository: <https://github.com/edmond-aliaga/ApproxOp>.
+
+Package on CRAN: <https://CRAN.R-project.org/package=ApproxOp>.
